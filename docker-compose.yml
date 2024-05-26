@@ -1,0 +1,28 @@
+services:
+  ubuntu_1:
+    image: ubuntu_sandbox
+    networks:
+      - ubuntu_network
+    ports:
+      - "22" # ssh
+    # Avoid the Ubuntu image from exiting early
+    tty: true
+    stdin_open: true
+
+  ubuntu_2:
+    image: ubuntu_sandbox
+    networks:
+      - ubuntu_network
+    ports:
+      - "22"
+    tty: true
+    stdin_open: true
+
+networks:
+  ubuntu_network:
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.0.0/23
+          ip_range: 192.168.1.0/24
+          gateway: 192.168.1.1
