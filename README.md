@@ -1,5 +1,11 @@
 # whaleflu
-Whaleflu is a dumb malware I'm developing for fun. Do not use for malicious purposes, thank you :)
+Whaleflu is a dumb malware I'm developing for fun. Strictly for educational purposes.
+
+The malware attempts to detect instances in the network and multiply itself over discovered instances, kind of like a botnet.
+
+## Starting Scenarion & Goal
+![Whaleflu graph](img/whaleflu_chart.png)  
+The starting scenario is that the malware has already infected one machine in the network (marked with red) and it's calling back home (c2c, marked with blue). Communicataion happens over simple Python scripts [whaleflu_c2c.py](whaleflu_c2c.py) and [whaleflu.py](whaleflu.py)
 
 ## Environment
 The sandbox environment consists of multiple Ubuntu Docker containers, connected via Docker network.
@@ -8,9 +14,13 @@ The sandbox environment consists of multiple Ubuntu Docker containers, connected
 - [Docker Engine](https://docs.docker.com/engine/install/ubuntu/)
 
 ## Running the virtual environment
-1. Build the image from Dockerfile: `$ docker build -t ubuntu_sandbox .`
-2. Start the environment: `$ docker compose up`
-3. In another terminal, check the status: `$ docker ps`
+- Build the infected image from Dockerfile: `$ docker build -t whaleflu_infected . --target=infected`
+- Build the non-infected image from Dockerfile: `$ docker build -t whaleflu_base . --target=base`
+- Build the C2C image from Dockerfile: `$ docker build -t whaleflu_c2c . --target=c2c`
+- Start the environment: `$ docker compose up --detach`
+- You can enter the individual containers by first getting the container ID via `$ docker ps` and then running: `$ docker exec -it [<Container ID>] bash`
+
+The container based on images `whaleflu_c2c` and `whaleflu_infected` have scripts `whaleflu_c2c.py` and `whaleflu.py`, respectively. You can enter each container via `$ docker exec -it [<Container ID>] bash` and execute the scripts via `$ python3 [<whaleflu_c2c.py || whaleflu.py>]`. The containers use these scripts to communicate with each other, you can think of it as the malware is calling back home. Simply put `whaleflu_c2c.py` is the C2C server, `whaleflu.py` is the client.
 
 ### Additional instructions, debugging
 To get the IP address of the containers, run: `$ docker inspect [<Container ID>] |grep "IPAddress"`

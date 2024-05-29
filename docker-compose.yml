@@ -1,25 +1,47 @@
 services:
-  ubuntu_1:
-    image: ubuntu_sandbox
+  c2c_server:
+    image: whaleflu_c2c
     networks:
-      - ubuntu_network
+      whaleflu_network:
+        ipv4_address: 192.168.0.1
     ports:
-      - "22" # ssh
-    # Avoid the Ubuntu image from exiting early
+      - "4000" # C2C server port
+    # Avoid the image from exiting early
     tty: true
     stdin_open: true
 
-  ubuntu_2:
-    image: ubuntu_sandbox
+  whaleflu_infected:
+    image: whaleflu_infected
     networks:
-      - ubuntu_network
+      whaleflu_network:
+        ipv4_address: 192.168.0.2
     ports:
-      - "22"
+      - "4000"
+    tty: true
+    stdin_open: true
+
+  whaleflu_target_1:
+    image: whaleflu_base
+    networks:
+      whaleflu_network:
+        ipv4_address: 192.168.0.3
+    ports:
+      - "4000"
+    tty: true
+    stdin_open: true
+
+  whaleflu_target_2:
+    image: whaleflu_base
+    networks:
+      whaleflu_network:
+        ipv4_address: 192.168.0.4
+    ports:
+      - "4000"
     tty: true
     stdin_open: true
 
 networks:
-  ubuntu_network:
+  whaleflu_network:
     ipam:
       driver: default
       config:

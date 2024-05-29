@@ -3,6 +3,14 @@ FROM ubuntu:22.04 as base
 RUN apt-get update -y
 RUN apt-get install -y \
     iputils-ping \
-    iproute2
+    iproute2 \
+    vim \
+    python3
 
-CMD ["bash"]
+### Infected machine image
+FROM base as infected
+COPY whaleflu.py .
+
+### C2C image
+FROM base as c2c
+COPY whaleflu_c2c.py .
