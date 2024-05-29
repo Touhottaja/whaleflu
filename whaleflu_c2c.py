@@ -7,21 +7,34 @@ C2C_PORT = 4000
 
 def main() -> None:
     s = socket.socket()
-    s.bind((C2C_HOST, C2C_PORT))
+    try:
+        s.bind((C2C_HOST, C2C_PORT))
+    except socket.error as e:
+        print(f"Failed to bind to {C2C_HOST}:{C2C_PORT}: {e}")
+        return
 
     print("C2C listening for connections...")
     s.listen(1)
-    c, addr = s.accept()
+
     while True:
-        data = c.recv(1024)
-        if not data:
-            break
-        print(data)
+        try:
+            c, addr = s.accept()
+            print(f"Connection accepted from {addr}")
 
-        data = b"OK"
-        c.send(data)
+            while True:
+                data = c.recv(1024)
+                if not data:
+                    break
+                print(data)
 
-    c.close()
+                response = b"OK"
+                c.send(response)
+
+        except socket.error as e:
+            print(f"Socket error: {e}")
+
+        finally:
+            c.close()
 
 
 if __name__ == "__main__":

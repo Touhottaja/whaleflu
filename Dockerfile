@@ -5,7 +5,8 @@ RUN apt-get install -y \
     iputils-ping \
     iproute2 \
     vim \
-    python3
+    python3 \
+    net-tools
 
 ### Infected machine image
 FROM base as infected
