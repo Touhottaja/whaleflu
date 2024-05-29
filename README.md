@@ -14,9 +14,17 @@ The sandbox environment consists of multiple Ubuntu Docker containers, connected
 - [Docker Engine](https://docs.docker.com/engine/install/ubuntu/)
 
 ## Running the virtual environment
+Build the images all at once via:
+```sh
+$ chmod +x build_containers.sh
+$ ./build_containers.sh
+```
+or build them individually:  
 - Build the infected image from Dockerfile: `$ docker build -t whaleflu_infected . --target=infected`
 - Build the non-infected image from Dockerfile: `$ docker build -t whaleflu_base . --target=base`
 - Build the C2C image from Dockerfile: `$ docker build -t whaleflu_c2c . --target=c2c`
+
+After the Docker images have been build:
 - Start the environment: `$ docker compose up --detach`
 - You can enter the individual containers by first getting the container ID via `$ docker ps` and then running: `$ docker exec -it [<Container ID>] bash`
 
