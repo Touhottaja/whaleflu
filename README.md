@@ -1,14 +1,20 @@
 # whaleflu
 Whaleflu is a dumb malware I'm developing for fun. Strictly for educational purposes.
 
-The malware attempts to detect instances in the network and multiply itself over discovered instances, kind of like a botnet.
+The malware attempts to detect instances in the network and multiply itself over discovered instances.
 
 ## Starting Scenarion & Goal
 ![Whaleflu graph](img/whaleflu_chart.png)  
-The starting scenario is that the malware has already infected one machine in the network (marked with red) and it's calling back home (c2c, marked with blue). Communicataion happens over simple Python scripts [whaleflu_c2c.py](whaleflu_c2c.py) and [whaleflu.py](whaleflu.py)
+The starting scenario is that the malware has already infected one machine in the network (marked with red) and it's calling back home (C2C, marked with blue). Communicataion happens over simple Python scripts [whaleflu_c2c.py](whaleflu_c2c.py) and [whaleflu.py](whaleflu.py)
+
+Whaleflu attempts to collect information about the infected host and send them back to the C2C server. It also pings the C2C server every once in a set period.
+
+After sending the host information, it will attempt to copy itself over to other machines in the network via `ssh` using common unsecure credentials. If copying was successful, whaleflu will execute the previous steps until it cannot copy itself further.
 
 ## Environment
 The sandbox environment consists of multiple Ubuntu Docker containers, connected via Docker network.
+
+The environment is supposed to simulate a typical unsecure environment where each machine allows `root` login via ssh. The ssh credentials are `root:root` for all instances.
 
 ### Requirements
 - [Docker Engine](https://docs.docker.com/engine/install/ubuntu/)
@@ -21,7 +27,7 @@ $ ./build_containers.sh
 ```
 or build them individually:  
 - Build the infected image from Dockerfile: `$ docker build -t whaleflu_infected . --target=infected`
-- Build the non-infected image from Dockerfile: `$ docker build -t whaleflu_base . --target=base`
+- Build the non-infected image from Dockerfile: `$ docker build -t whaleflu_base . --target=whaleflu_base`
 - Build the C2C image from Dockerfile: `$ docker build -t whaleflu_c2c . --target=c2c`
 
 After the Docker images have been build:

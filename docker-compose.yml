@@ -6,9 +6,6 @@ services:
         ipv4_address: 192.168.0.1
     ports:
       - "4000" # C2C server port
-    # Avoid the image from exiting early
-    tty: true
-    stdin_open: true
 
   whaleflu_infected:
     image: whaleflu_infected
@@ -17,8 +14,7 @@ services:
         ipv4_address: 192.168.0.2
     ports:
       - "4000"
-    tty: true
-    stdin_open: true
+      - "22"
 
   whaleflu_target_1:
     image: whaleflu_base
@@ -27,8 +23,7 @@ services:
         ipv4_address: 192.168.0.3
     ports:
       - "4000"
-    tty: true
-    stdin_open: true
+      - "22"
 
   whaleflu_target_2:
     image: whaleflu_base
@@ -37,8 +32,7 @@ services:
         ipv4_address: 192.168.0.4
     ports:
       - "4000"
-    tty: true
-    stdin_open: true
+      - "22"
 
 networks:
   whaleflu_network:
