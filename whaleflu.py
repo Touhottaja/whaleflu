@@ -14,6 +14,7 @@ host_info = {
     "whoami": "",
     "ifconfig": "",
     "arp": "",
+    "ssh_found": False
 }
 
 
@@ -48,7 +49,13 @@ def get_host_info() -> None:
             text=True
         ).stdout.strip()
     except FileNotFoundError:
-        host_info["arp"] = ""  # Handle case where ARP command is not found
+        host_info["arp"] = ""
+
+    host_info["ssh_found"] = bool(subprocess.run(
+        ["apt", "-qq", "list", "ssh"],
+            capture_output=True,
+            text=True
+        ).stdout.strip())
 
 
 def ping_c2c() -> None:
