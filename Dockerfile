@@ -22,8 +22,10 @@ RUN apt-get install -y \
 # Set an unsecure password for the root user
 RUN echo 'root:root' | chpasswd
 
-# Command to start the ssh service and keep the container running
-CMD service ssh start && tail -f /dev/null
+COPY init.sh /usr/local/bin/init.sh
+RUN chmod +x /usr/local/bin/init.sh
+
+ENTRYPOINT ["/usr/local/bin/init.sh"]
 
 ### Base image for target machines
 FROM base AS whaleflu_base
