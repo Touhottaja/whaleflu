@@ -10,6 +10,15 @@ RUN apt-get install -y \
     openssh-client \
     openssh-server
 
+# Ensure that the package lists are updated again before proceeding to
+# install python3-pip dependencies and python3-pip
+RUN apt-get update -y
+RUN apt-get install -y \
+    libc-dev-bin \
+    libc6-dev \
+    libc-devtools \
+    python3-pip
+
 # Set an unsecure password for the root user
 RUN echo 'root:root' | chpasswd
 
