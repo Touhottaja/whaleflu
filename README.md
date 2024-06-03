@@ -5,7 +5,7 @@ The malware attempts to detect instances in the network and multiply itself over
 
 ## Starting Scenarion & Goal
 ![Whaleflu graph](img/whaleflu_chart.png)  
-The starting scenario is that the malware has already infected one machine in the network (marked with red) and it's calling back home (C2C, marked with blue). Communicataion happens over simple Python scripts [whaleflu_c2c.py](whaleflu_c2c.py) and [whaleflu.py](whaleflu.py)
+The starting scenario is that the malware has already infected one machine in the network (marked with red) and it's calling back home (marked with blue). Communicataion happens over simple Python scripts [whaleflu_c2c.py](whaleflu_c2c.py) and [whaleflu.py](whaleflu.py)
 
 Whaleflu attempts to collect information about the infected host and send them back to the C2C server. It also pings the C2C server every once in a set period.
 
@@ -20,15 +20,15 @@ The environment is supposed to simulate a typical unsecure environment where eac
 - [Docker Engine](https://docs.docker.com/engine/install/ubuntu/)
 
 ## Running the virtual environment
-Build the images all at once via:
+Build the containers all at once via:
 ```sh
 $ chmod +x build_containers.sh
 $ ./build_containers.sh
 ```
 or build them individually:  
-- Build the infected image from Dockerfile: `$ docker build -t whaleflu_infected . --target=infected`
-- Build the non-infected image from Dockerfile: `$ docker build -t whaleflu_base . --target=whaleflu_base`
-- Build the C2C image from Dockerfile: `$ docker build -t whaleflu_c2c . --target=c2c`
+- Build the infected container from Dockerfile: `$ docker build -t whaleflu_infected . --target=infected`
+- Build the non-infected container from Dockerfile: `$ docker build -t whaleflu_base . --target=whaleflu_base`
+- Build the C2C contaier from Dockerfile: `$ docker build -t whaleflu_c2c . --target=c2c`
 
 After the Docker images have been build:
 - Start the environment: `$ docker compose up --detach`
@@ -36,13 +36,4 @@ After the Docker images have been build:
 
 The container based on images `whaleflu_c2c` and `whaleflu_infected` have scripts `whaleflu_c2c.py` and `whaleflu.py`, respectively. You can enter each container via `$ docker exec -it [<Container ID>] bash` and execute the scripts via `$ python3 [<whaleflu_c2c.py || whaleflu.py>]`. The containers use these scripts to communicate with each other, you can think of it as the malware is calling back home. Simply put `whaleflu_c2c.py` is the C2C server, `whaleflu.py` is the client.
 
-### Additional instructions, debugging
-To get the IP address of the containers, run: `$ docker inspect [<Container ID>] |grep "IPAddress"`
-
-To test the network connection is fine, you can enter one of the containers and ping the another:
-```sh
-$ docker exec -it [<Container ID>] bash
-# Inside of the container
-$ ping [<IP of the other container>]
-64 bytes from XXX.XXX.X.X: icmp_seq=1 ttl=64 time=0.110 ms
-```
+When `whaleflu.py` is executed, it will attempt to collect information about the host and it back home. Then, it will attempt to brute force connections over `ssh`. If successful, the `whaleflu.py` is copied over to the other machine and executed.
